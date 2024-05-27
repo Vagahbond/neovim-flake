@@ -10,39 +10,9 @@
   inherit (lib.nvim.types) mkPluginSetupOption;
 
   supported_themes = import ./supported_themes.nix;
-  builtin_themes = [
-    "auto"
-    "16color"
-    "gruvbox"
-    "ayu_dark"
-    "ayu_light"
-    "ayu_mirage"
-    "codedark"
-    "dracula"
-    "everforest"
-    "gruvbox"
-    "gruvbox_light"
-    "gruvbox_material"
-    "horizon"
-    "iceberg_dark"
-    "iceberg_light"
-    "jellybeans"
-    "material"
-    "modus_vivendi"
-    "molokai"
-    "nightfly"
-    "nord"
-    "oceanicnext"
-    "onelight"
-    "palenight"
-    "papercolor_dark"
-    "papercolor_light"
-    "powerline"
-    "seoul256"
-    "solarized_dark"
-    "tomorrow"
-    "wombat"
-  ];
+  builtin_themes = import ./builtin_themes.nix;
+
+  mkLualineSectionOption = import ./section_options.nix {inherit lib;};
 in {
   options.vim.statusline.lualine = {
     enable = mkEnableOption "lualine statusline plugin";
@@ -139,87 +109,79 @@ in {
     };
 
     activeSection = {
-      a = mkOption {
-        type = listOf str;
+      a = mkLualineSectionOption {
         description = "active config for: | (A) | B | C       X | Y | Z |";
         default = [
-          ''
-            {
-              "mode",
-              icons_enabled = true,
-              separator = {
-                left = '▎',
-                right = ''
-              },
-            }
-          ''
-          ''
-            {
-              "",
-              draw_empty = true,
-              separator = { left = '', right = '' }
-            }
-          ''
+          {
+            content = "mode";
+            iconsEnabled = true;
+            separator = {
+              left = "▎";
+              right = "";
+            };
+          }
+          {
+            drawEmpty = true;
+            separator = {
+              left = "";
+              right = "";
+            };
+          }
         ];
       };
-
-      b = mkOption {
-        type = listOf str;
+      b = mkLualineSectionOption {
         description = "active config for: | A | (B) | C       X | Y | Z |";
         default = [
-          ''
-            {
-              "filetype",
-              colored = true,
-              icon_only = true,
-              icon = { align = 'left' }
-            }
-          ''
-          ''
-            {
-              "filename",
-              symbols = {modified = ' ', readonly = ' '},
-              separator = {right = ''}
-            }
-          ''
-          ''
-            {
-              "",
-              draw_empty = true,
-              separator = { left = '', right = '' }
-            }
-          ''
+          {
+            content = "filetype";
+            colored = true;
+            iconOnly = true;
+            icon = {align = "left";};
+          }
+          {
+            content = "filename";
+            symbols = {
+              modified = " ";
+              readonly = " ";
+            };
+            separator = {right = "";};
+          }
+          {
+            drawEmpty = true;
+            separator = {
+              left = "";
+              right = "";
+            };
+          }
         ];
       };
 
-      c = mkOption {
-        type = listOf str;
+      c = mkLualineSectionOption {
         description = "active config for: | A | B | (C)       X | Y | Z |";
         default = [
-          ''
-            {
-              "diff",
-              colored = false,
-              diff_color = {
-                -- Same color values as the general color option can be used here.
-                added    = 'DiffAdd',    -- Changes the diff's added color
-                modified = 'DiffChange', -- Changes the diff's modified color
-                removed  = 'DiffDelete', -- Changes the diff's removed color you
-              },
-              symbols = {added = '+', modified = '~', removed = '-'}, -- Changes the diff symbols
-              separator = {right = ''}
-            }
-          ''
+          {
+            content = "diff";
+            colored = false;
+            diffColor = {
+              added = "DiffAdd";
+              modified = "DiffChange";
+              removed = "DiffDelete";
+            };
+            symbols = {
+              added = "+";
+              modified = "~";
+              removed = "-";
+            };
+            separator = {right = "";};
+          }
         ];
       };
 
-      x = mkOption {
-        type = listOf str;
+      x = mkLualineSectionOption {
         description = "active config for: | A | B | C       (X) | Y | Z |";
         default = [
-          ''
-            {
-              -- Lsp server name
+          {
+            content = ''
               function()
                 local buf_ft = vim.api.nvim_get_option_value('filetype', {})
 
@@ -251,200 +213,173 @@ in {
 
                 return msg
               end,
-              icon = ' ',
-              separator = {left = ''},
-            }
-          ''
-          ''
-            {
-              "diagnostics",
-              sources = {'nvim_lsp', 'nvim_diagnostic', 'nvim_diagnostic', 'vim_lsp', 'coc'},
-              symbols = {error = '󰅙  ', warn = '  ', info = '  ', hint = '󰌵 '},
-              colored = true,
-              update_in_insert = false,
-              always_visible = false,
-              diagnostics_color = {
-                color_error = { fg = 'red' },
-                color_warn = { fg = 'yellow' },
-                color_info = { fg = 'cyan' },
-              },
-            }
-          ''
+            '';
+            icon = " ";
+            separator = {left = "";};
+          }
+          {
+            content = "diagnostics";
+            sources = ["nvim_lsp" "nvim_diagnostic" "nvim_diagnostic" "vim_lsp" "coc"];
+            symbols = {
+              error = "󰅙  ";
+              warn = "  ";
+              info = "  ";
+              hint = "󰌵 ";
+            };
+            colored = true;
+            updateInInsert = false;
+            alwaysVisible = false;
+            diagnosticsColor = {
+              color_error = {fg = "red";};
+              color_warn = {fg = "yellow";};
+              color_info = {fg = "cyan";};
+            };
+          }
         ];
       };
 
-      y = mkOption {
-        type = listOf str;
+      y = mkLualineSectionOption {
         description = "active config for: | A | B | C       X | (Y) | Z |";
         default = [
-          ''
-            {
-              "",
-              draw_empty = true,
-              separator = { left = '', right = '' }
-            }
-          ''
-          ''
-            {
-              'searchcount',
-              maxcount = 999,
-              timeout = 120,
-              separator = {left = ''}
-            }
-          ''
-          ''
-            {
-              "branch",
-              icon = ' •',
-              separator = {left = ''}
-            }
-          ''
+          {
+            drawEmpty = true;
+            separator = {
+              left = "";
+              right = "";
+            };
+          }
+          {
+            content = "searchcount";
+            maxcount = 999;
+            timeout = 120;
+            separator = {left = "";};
+          }
+          {
+            content = "branch";
+            icon = " •";
+            separator = {left = "";};
+          }
         ];
       };
 
-      z = mkOption {
-        type = listOf str;
+      z = mkLualineSectionOption {
         description = "active config for: | A | B | C       X | Y | (Z) |";
         default = [
-          ''
-            {
-              "",
-              draw_empty = true,
-              separator = { left = '', right = '' }
-            }
-          ''
-          ''
-            {
-              "progress",
-              separator = {left = ''}
-            }
-          ''
-          ''
-            {"location"}
-          ''
-          ''
-            {
-              "fileformat",
-              color = {fg='black'},
-              symbols = {
-                unix = '', -- e712
-                dos = '',  -- e70f
-                mac = '',  -- e711
-              }
-            }
-          ''
+          {
+            drawEmpty = true;
+            separator = {
+              left = "";
+              right = "";
+            };
+          }
+          {
+            content = "progress";
+            separator = {left = "";};
+          }
+          {content = "location";}
+          {
+            content = "fileformat";
+            color = {fg = "black";};
+            symbols = {
+              unix = "'";
+              dos = "'";
+              mac = "'";
+            };
+          }
         ];
       };
     };
 
     extraActiveSection = {
-      a = mkOption {
-        type = listOf str;
+      a = mkLualineSectionOption {
         description = "Extra entries for activeSection.a";
         default = [];
       };
 
-      b = mkOption {
-        type = listOf str;
+      b = mkLualineSectionOption {
         description = "Extra entries for activeSection.b";
         default = [];
       };
 
-      c = mkOption {
-        type = listOf str;
+      c = mkLualineSectionOption {
         description = "Extra entries for activeSection.c";
         default = [];
       };
 
-      x = mkOption {
-        type = listOf str;
+      x = mkLualineSectionOption {
         description = "Extra entries for activeSection.x";
         default = [];
       };
 
-      y = mkOption {
-        type = listOf str;
+      y = mkLualineSectionOption {
         description = "Extra entries for activeSection.y";
         default = [];
       };
 
-      z = mkOption {
-        type = listOf str;
+      z = mkLualineSectionOption {
         description = "Extra entries for activeSection.z";
         default = [];
       };
     };
 
     inactiveSection = {
-      a = mkOption {
-        type = listOf str;
+      a = mkLualineSectionOption {
         description = "inactive config for: | (A) | B | C       X | Y | Z |";
         default = [];
       };
 
-      b = mkOption {
-        type = listOf str;
+      b = mkLualineSectionOption {
         description = "inactive config for: | A | (B) | C       X | Y | Z |";
         default = [];
       };
 
-      c = mkOption {
-        type = listOf str;
+      c = mkLualineSectionOption {
         description = "inactive config for: | A | B | (C)       X | Y | Z |";
-        default = ["'filename'"];
+        default = [{content = "filename";}];
       };
 
-      x = mkOption {
-        type = listOf str;
+      x = mkLualineSectionOption {
         description = "inactive config for: | A | B | C       (X) | Y | Z |";
-        default = ["'location'"];
+        default = [{contentn = "location";}];
       };
 
-      y = mkOption {
-        type = listOf str;
+      y = mkLualineSectionOption {
         description = "inactive config for: | A | B | C       X | (Y) | Z |";
         default = [];
       };
 
-      z = mkOption {
-        type = listOf str;
+      z = mkLualineSectionOption {
         description = "inactive config for: | A | B | C       X | Y | (Z) |";
         default = [];
       };
     };
     extraInactiveSection = {
-      a = mkOption {
-        type = listOf str;
+      a = mkLualineSectionOption {
         description = "Extra entries for inactiveSection.a";
         default = [];
       };
 
-      b = mkOption {
-        type = listOf str;
+      b = mkLualineSectionOption {
         description = "Extra entries for inactiveSection.b";
         default = [];
       };
 
-      c = mkOption {
-        type = listOf str;
+      c = mkLualineSectionOption {
         description = "Extra entries for inactiveSection.c";
         default = [];
       };
 
-      x = mkOption {
-        type = listOf str;
+      x = mkLualineSectionOption {
         description = "Extra entries for inactiveSection.x";
         default = [];
       };
 
-      y = mkOption {
-        type = listOf str;
+      y = mkLualineSectionOption {
         description = "Extra entries for inactiveSection.y";
         default = [];
       };
 
-      z = mkOption {
-        type = listOf str;
+      z = mkLualineSectionOption {
         description = "Extra entries for inactiveSection.z";
         default = [];
       };
